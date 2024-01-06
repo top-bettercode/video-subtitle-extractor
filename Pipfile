@@ -1,0 +1,48 @@
+[[source]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+verify_ssl = true
+name = "pip_conf_index_global"
+
+[packages]
+astor = "==0.8.1"
+certifi = "==2021.10.8"
+chardet = "==4.0.0"
+cycler = "==0.11.0"
+decorator = "==5.1.0"
+filesplit = "==3.0.2"
+gast = "==0.5.3"
+idna = "==3.3"
+imageio = "==2.13.3"
+imgaug = "==0.4.0"
+kiwisolver = "==1.3.2"
+lmdb = "==1.2.1"
+matplotlib = "==3.5.1"
+networkx = "==2.6.3"
+numpy = "==1.19.3"
+opencv-python = "==4.5.4.60"
+paddlepaddle = "==2.4.2"
+pillow = "==8.4.0"
+protobuf = "==3.19.1"
+pyclipper = "==1.3.0.post2"
+pyparsing = "==3.0.6"
+pysimplegui = "==4.55.1"
+python-dateutil = "==2.8.2"
+python-levenshtein-wheels = "==0.13.2"
+pywavelets = "==1.2.0"
+requests = "==2.26.0"
+scikit-image = "==0.19.1"
+scipy = "==1.7.3"
+shapely = "==1.8.0"
+six = "==1.16.0"
+tifffile = "==2021.11.2"
+urllib3 = "==1.26.7"
+pysrt = "==1.1.2"
+wordsegment = "==1.3.1"
+tqdm = "==4.63.1"
+multiprocess = "==0.70.12.2"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
+python_full_version = "3.8.18"

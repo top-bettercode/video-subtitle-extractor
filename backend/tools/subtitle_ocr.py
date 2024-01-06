@@ -142,14 +142,14 @@ def ocr_task_consumer(ocr_queue, raw_subtitle_path, sub_area, video_path, option
                 if frame_no == -1:
                     return
                 data['i'] = frame_no
-                extract_subtitles(data, text_recogniser, frame, raw_subtitle_file, sub_area, options, dt_box,
+                extract_subtitles(data, text_recogniser, frame, raw_subtitle_file, None, options, dt_box,
                                   rec_res, ocr_loss_debug_path)
             except Exception as e:
                 print(e)
                 break
 
 
-def ocr_task_producer(ocr_queue, task_queue, progress_queue, video_path, raw_subtitle_path):
+def ocr_task_producer(ocr_queue, task_queue, progress_queue, video_path, raw_subtitle_path,sub_area):
     """
     生产者：负责生产用于OCR识别的数据，将需要进行ocr识别的数据加入ocr_queue中
     :param ocr_queue (current_frame_no当前帧帧号, frame 视频帧, dt_box检测框, rec_res识别结果)
@@ -183,13 +183,16 @@ def ocr_task_producer(ocr_queue, task_queue, progress_queue, video_path, raw_sub
                 cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame_no - 1)
             # 读取视频帧
             ret, frame = cap.read()
+            if frame is None:
+                continue
+            # 根据默认字幕位置，则对视频帧进行裁剪，裁剪后处理
+            if default_subtitle_area is not None:
+                frame = frame_preprocess(default_subtitle_area, sub_area, frame)
+
             ocr = OcrRecogniser()
             dt_box, rec_res = ocr.predict(frame)
             # 如果读取成功
             if ret:
-                # 根据默认字幕位置，则对视频帧进行裁剪，裁剪后处理
-                if default_subtitle_area is not None:
-                    frame = frame_preprocess(default_subtitle_area, frame)
                 ocr_queue.put((current_frame_no, frame, dt_box, rec_res))
         except Exception as e:
             print(e)
@@ -214,7 +217,7 @@ def subtitle_extract_handler(task_queue, progress_queue, video_path, raw_subtitl
     ocr_queue = queue.Queue(20)
     # 创建一个OCR事件生产者线程
     ocr_event_producer_thread = Thread(target=ocr_task_producer,
-                                       args=(ocr_queue, task_queue, progress_queue, video_path, raw_subtitle_path,),
+                                       args=(ocr_queue, task_queue, progress_queue, video_path, raw_subtitle_path,sub_area),
                                        daemon=True)
     # 创建一个OCR事件消费者提取线程
     ocr_event_consumer_thread = Thread(target=ocr_task_consumer,
@@ -254,7 +257,7 @@ def async_start(video_path, raw_subtitle_path, sub_area, options):
     return p, task_queue, progress_queue
 
 
-def frame_preprocess(subtitle_area, frame):
+def frame_preprocess(subtitle_area, sub_area, frame):
     """
     将视频帧进行裁剪
     """
@@ -265,14 +268,19 @@ def frame_preprocess(subtitle_area, frame):
     #     frames = cv2.resize(frames, None, fx=scale_rate, fy=scale_rate, interpolation=cv2.INTER_AREA)
     # 如果字幕出现的区域在下部分
     if subtitle_area == SubtitleArea.LOWER_PART:
-        cropped = int(frame.shape[0] // 2)
+        cropped = int(frame.shape[0] * 3 // 4)
         # 将视频帧切割为下半部分
         frame = frame[cropped:]
     # 如果字幕出现的区域在上半部分
     elif subtitle_area == SubtitleArea.UPPER_PART:
-        cropped = int(frame.shape[0] // 2)
+        cropped = int(frame.shape[0] // 4)
         # 将视频帧切割为下半部分
         frame = frame[:cropped]
+    else:
+        (y_min, y_max, x_min, x_max) = sub_area
+        #  将视频帧进行裁剪
+        frame = frame[y_min:y_max, x_min:x_max]
+
     return frame
 
 

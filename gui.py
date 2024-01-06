@@ -5,7 +5,7 @@
 @FileName: gui.py
 @desc: 字幕提取器图形化界面
 """
-import backend.main
+import backend.subtitle
 import os
 import configparser
 import PySimpleGUI as sg
@@ -312,7 +312,7 @@ class SubtitleExtractorGUI:
                 def task():
                     while self.video_paths:
                         video_path = self.video_paths.pop()
-                        self.se = backend.main.SubtitleExtractor(video_path, subtitle_area)
+                        self.se = backend.subtitle.SubtitleExtractor(video_path, subtitle_area)
                         self.se.run()
                 Thread(target=task, daemon=True).start()
                 self.video_cap.release()
@@ -459,7 +459,7 @@ class LanguageModeGUI:
 
         self.LANGUAGE_DEF = config_language_mode_gui["LanguageCH"]
         self.LANGUAGE_NAME_KEY_MAP = {}
-        for lang in backend.main.config.MULTI_LANG:
+        for lang in backend.subtitle.config.MULTI_LANG:
             self.LANGUAGE_NAME_KEY_MAP[config_language_mode_gui[f"Language{lang.upper()}"]] = lang
         self.LANGUAGE_NAME_KEY_MAP = dict(sorted(self.LANGUAGE_NAME_KEY_MAP.items(), key=lambda item: item[1]))
         self.LANGUAGE_KEY_NAME_MAP = {v: k for k, v in self.LANGUAGE_NAME_KEY_MAP.items()}
